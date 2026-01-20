@@ -19,7 +19,7 @@ const sendResetEmail = async (toEmail, name) => {
   const emailData = {
     sender: {
       name: "Soporte Salud al Día",
-      email: "noreply@saludaldia.com",
+      email: process.env.BREVO_SENDER_EMAIL || "xpertpro360@gmail.com",
     },
     to: [
       {
