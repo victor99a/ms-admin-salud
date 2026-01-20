@@ -50,13 +50,15 @@ const getUsers = async (req, res) => {
 const sendResetLink = async (req, res) => {
   const { email } = req.body;
   try {
+    console.log(email)
     const user = await db('profiles')
       .whereRaw('LOWER(email) = ?', [email.toLowerCase()])
       .first();
-
+    console.log(user)
     if (!user) return res.status(404).json({ error: 'Usuario no encontrado en BD' });
 
     const fullName = `${user.first_names} ${user.last_names}`;
+    console.log(fullName)
     await sendResetEmail(user.email, fullName);
     res.json({ message: 'Correo enviado correctamente' });
   } catch (error) {

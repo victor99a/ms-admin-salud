@@ -1,26 +1,46 @@
-const nodemailer = require('nodemailer');
-require('dotenv').config();
+const nodemailer = require("nodemailer");
+require("dotenv").config();
 
-const transporter = nodemailer.createTransport({
-  host: 'smtp.gmail.com',
-  port: 465,
-  secure: true,
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS
-  },
-  tls: {
-    rejectUnauthorized: false
+let transporter = null;
+
+const initTransporter = () => {
+  if (!transporter) {
+    if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+      throw new Error("ERROR: EMAIL_USER o EMAIL_PASS no están definidas");
+    }
+
+    transporter = nodemailer.createTransport({
+      host: "smtp.gmail.com",
+      port: 587,
+      secure: false,
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
+      tls: {
+        rejectUnauthorized: false,
+      },
+      connectionTimeout: 10000,
+      socketTimeout: 10000,
+    });
   }
-});
+  return transporter;
+};
 
 const sendResetEmail = async (toEmail, name) => {
+  if (!process.env.FRONTEND_URL) {
+    throw new Error("FRONTEND_URL no está definida en variables de entorno");
+  }
+
   const resetLink = `${process.env.FRONTEND_URL}/reset-password?email=${toEmail}`;
+  console.log("Reset link:", resetLink);
+  console.log("Destinatario:", toEmail);
+  console.log("Nombre:", name);
 
   const mailOptions = {
     from: `"Soporte Salud al Día" <${process.env.EMAIL_USER}>`,
     to: toEmail,
-    subject: 'Restablecer Contraseña - Salud al Día',
+    subject: "Restablecer Contraseña - Salud al Día",
     html: `
       <div style="font-family: sans-serif; padding: 20px; text-align: center; border: 1px solid #ddd; border-radius: 8px; max-width: 500px; margin: 0 auto;">
         <h2 style="color: #2563eb;">Hola, ${name}</h2>
@@ -32,15 +52,18 @@ const sendResetEmail = async (toEmail, name) => {
         <br><br>
         <p style="font-size: 12px; color: #777;">Si no solicitaste esto, ignora este mensaje.</p>
       </div>
-    `
+    `,
   };
 
   try {
-    const info = await transporter.sendMail(mailOptions);
-    return info;
+    console.log("Iniciando envío de email...");
+    const mailTransporter = initTransporter();
+    const info = await mailTransporter.sendMail(mailOptions);
+    console.log("Email enviado exitosamente. ID:", info.messageId);
+    return { success: true, messageId: info.messageId };
   } catch (error) {
-    console.error("Error sendResetEmail:", error);
-    throw error;
+    console.error("Error al enviar email:", error.message);
+    throw new Error(`Fallo al enviar email: ${error.message}`);
   }
 };
 
