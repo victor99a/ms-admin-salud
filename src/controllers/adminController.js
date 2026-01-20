@@ -24,7 +24,6 @@ const getStats = async (req, res) => {
       }))
     });
   } catch (error) {
-    console.error("Error getStats:", error);
     res.status(500).json({ error: 'Error al obtener estadísticas' });
   }
 };
@@ -42,7 +41,6 @@ const getUsers = async (req, res) => {
 
     res.json(normalizedUsers);
   } catch (error) {
-    console.error("Error getUsers:", error);
     res.status(500).json({ error: 'Error al listar usuarios' });
   }
 };
@@ -50,19 +48,17 @@ const getUsers = async (req, res) => {
 const sendResetLink = async (req, res) => {
   const { email } = req.body;
   try {
-    console.log(email)
     const user = await db('profiles')
       .whereRaw('LOWER(email) = ?', [email.toLowerCase()])
       .first();
-    console.log(user)
-    if (!user) return res.status(404).json({ error: 'Usuario no encontrado en BD' });
+
+    if (!user) return res.status(404).json({ error: 'Usuario no encontrado' });
 
     const fullName = `${user.first_names} ${user.last_names}`;
-    console.log(fullName)
     await sendResetEmail(user.email, fullName);
+    
     res.json({ message: 'Correo enviado correctamente' });
   } catch (error) {
-    console.error("Error sendResetLink:", error);
     res.status(500).json({ error: 'Error al enviar correo' });
   }
 };
@@ -84,7 +80,6 @@ const updatePasswordAuth = async (req, res) => {
 
     res.json({ success: true, message: 'Contraseña actualizada' });
   } catch (error) {
-    console.error('Error updatePasswordAuth:', error);
     res.status(500).json({ error: 'Fallo al actualizar contraseña' });
   }
 };
@@ -95,6 +90,7 @@ const deleteUser = async (req, res) => {
     await db.transaction(async (trx) => {
       const user = await trx('profiles').where({ id }).first();
       if (!user) throw new Error('Usuario no existe');
+      
       if (!user.delete_requested_at) {
         throw new Error('Solo se pueden eliminar usuarios con solicitud pendiente');
       }
@@ -109,7 +105,6 @@ const deleteUser = async (req, res) => {
 
     res.json({ message: 'Usuario y registros eliminados permanentemente' });
   } catch (error) {
-    console.error("Error deleteUser:", error);
     res.status(400).json({ error: error.message });
   }
 };
@@ -124,12 +119,9 @@ const verifyAdmin = async (req, res) => {
       .whereRaw('LOWER(email) = ?', [email.toLowerCase()]) 
       .first();
 
-    if (user && user.role && user.role.toLowerCase() === 'admin') {
-      return res.json({ isAdmin: true });
-    }
-    return res.json({ isAdmin: false });
+    const isAdmin = user && user.role && user.role.toLowerCase() === 'admin';
+    return res.json({ isAdmin: !!isAdmin });
   } catch (error) {
-    console.error("Error verifyAdmin:", error);
     res.status(500).json({ error: 'Error verificando rol' });
   }
 };
@@ -149,7 +141,6 @@ const requestAccountDeletion = async (req, res) => {
 
     res.json({ success: true, message: 'Solicitud recibida' });
   } catch (error) {
-    console.error("Error requestAccountDeletion:", error);
     res.status(500).json({ error: 'Error al procesar solicitud' });
   }
 };

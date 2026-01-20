@@ -7,7 +7,6 @@ require("dotenv").config();
 const app = express();
 const PORT = process.env.PORT || 4000;
 
-// --- VALIDACIÓN ACTUALIZADA ---
 const requiredEnvVars = [
   "DB_HOST",
   "DB_USER",
@@ -23,7 +22,7 @@ const requiredEnvVars = [
 const missingEnvVars = requiredEnvVars.filter((envVar) => !process.env[envVar]);
 
 if (missingEnvVars.length > 0) {
-  console.error(`❌ ERROR: Faltan variables en .env: ${missingEnvVars.join(", ")}`);
+  console.error(`Error: Faltan variables de entorno: ${missingEnvVars.join(", ")}`);
   process.exit(1);
 }
 
@@ -34,14 +33,13 @@ app.use(morgan("dev"));
 app.use("/api/admin", adminRoutes);
 
 app.get("/", (req, res) => {
-  res.send("MS Admin Health - Conectado con EmailJS");
+  res.send("MS Admin Health - Servicio Activo");
 });
 
 app.use((err, req, res, next) => {
-  console.error("Error global:", err);
   res.status(500).json({ error: "Error interno del servidor" });
 });
 
 app.listen(PORT, () => {
-  console.log(`🚀 Servidor corriendo en http://localhost:${PORT}`);
+  console.log(`Servidor iniciado en puerto ${PORT}`);
 });
