@@ -153,7 +153,13 @@ const createSpecialist = async (req, res) => {
       email: email,
       password: password,
       email_confirm: true,
-      user_metadata: { first_names, last_names, rut, role: 'specialist' }
+      user_metadata: { 
+        first_names, 
+        last_names, 
+        rut, 
+        role: 'specialist',
+        status: 'active' // <--- IMPORTANTE: Agregado para que el Trigger lo reciba
+      }
     });
 
     if (authError) throw authError;
