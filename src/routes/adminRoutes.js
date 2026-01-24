@@ -12,5 +12,6 @@ router.patch('/users/request-deletion/:id', controller.requestAccountDeletion);
 router.delete('/users/:id', controller.deleteUser);
 
 router.post('/verify-admin', controller.verifyAdmin); 
+router.post('/create-specialist', controller.createSpecialist);
 
 module.exports = router;

@@ -145,6 +145,39 @@ const requestAccountDeletion = async (req, res) => {
   }
 };
 
+const createSpecialist = async (req, res) => {
+  const { email, password, first_names, last_names, rut } = req.body;
+
+  try {
+    const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
+      email: email,
+      password: password,
+      email_confirm: true,
+      user_metadata: { first_names, last_names, rut, role: 'specialist' }
+    });
+
+    if (authError) throw authError;
+
+    const userId = authData.user.id;
+
+    await db('profiles').insert({
+      id: userId,
+      email,
+      rut,
+      first_names,
+      last_names,
+      role: 'specialist',
+      status: 'active'
+    }).onConflict('id').merge();
+
+    res.status(201).json({ message: 'Especialista creado exitosamente', id: userId });
+
+  } catch (error) {
+    console.error("Error creando especialista:", error);
+    res.status(500).json({ error: error.message || 'Error al crear especialista' });
+  }
+};
+
 module.exports = { 
   getStats, 
   getUsers, 
@@ -152,5 +185,6 @@ module.exports = {
   updatePasswordAuth, 
   deleteUser,
   verifyAdmin,
-  requestAccountDeletion 
+  requestAccountDeletion,
+  createSpecialist
 };
