@@ -175,7 +175,7 @@ const createSpecialist = async (req, res) => {
     });
 
     if (authError) {
-       if (authError.message.includes("already has been registered")) {
+       if (authError.message.includes("already been registered") || authError.message.includes("already has been registered")) {
           throw new Error("El correo ya está registrado en el sistema de autenticación.");
        }
        throw authError;
@@ -199,7 +199,6 @@ const createSpecialist = async (req, res) => {
     res.status(201).json({ message: 'Especialista creado exitosamente', id: userId });
 
   } catch (error) {
-    console.error("Error creando especialista:", error);
     res.status(400).json({ error: error.message || 'Error al crear especialista' });
   }
 };
